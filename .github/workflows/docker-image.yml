@@ -21,7 +21,4 @@ jobs:
         file: ./Dockerfile
         push: true
         tags: |
-          ${{ env.ARTIFACTORY_REGISTRY }}/${{ env.ARTIFACTORY_REPOSITORY }}/${{ env.ARTIFACT }}:latest
-          ${{ env.ARTIFACTORY_REGISTRY }}/${{ env.ARTIFACTORY_REPOSITORY }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
-          ${{ env.GCLOUD_REGISTRY }}/${{ env.GCLOUD_REPOSITORY }}/${{ env.ARTIFACT }}:latest
-          ${{ env.GCLOUD_REGISTRY }}/${{ env.GCLOUD_REPOSITORY }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
+          tnhnclskn/screenshot:latest
