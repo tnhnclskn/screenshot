@@ -20,5 +20,8 @@ jobs:
         context: .
         file: ./Dockerfile
         push: true
-        tags: $(date +%s)
-        labels: ${{ steps.meta.outputs.labels }}
+        tags: |
+          ${{ env.ARTIFACTORY_REGISTRY }}/${{ env.ARTIFACTORY_REPOSITORY }}/${{ env.ARTIFACT }}:latest
+          ${{ env.ARTIFACTORY_REGISTRY }}/${{ env.ARTIFACTORY_REPOSITORY }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
+          ${{ env.GCLOUD_REGISTRY }}/${{ env.GCLOUD_REPOSITORY }}/${{ env.ARTIFACT }}:latest
+          ${{ env.GCLOUD_REGISTRY }}/${{ env.GCLOUD_REPOSITORY }}/${{ env.ARTIFACT }}:${{ env.VERSION }}
