@@ -25,6 +25,10 @@ app.post("/", async (req, res) => {
   res.send(image);
 });
 
+app.get("/up", async (req, res) => {
+  res.send('OK');
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
