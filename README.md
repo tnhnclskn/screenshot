@@ -1,113 +1,181 @@
-# 📸 Web Element Screenshot Service
+# 📸 Web Element & Page Screenshot Service
 
-Node.js, Express ve Puppeteer kullanılarak geliştirilmiş, belirtilen URL üzerindeki belirli bir HTML elementinin ekran görüntüsünü (screenshot) alan ve PNG formatında döndüren hafif (lightweight) bir REST API mikroservisidir.
+Node.js, Express ve Puppeteer kullanılarak geliştirilmiş; Header tabanlı kimlik doğrulama (Auth Check), interaktif canlı dokümantasyon arayüzü ve gelişmiş özelleştirme parametrelerine sahip yüksek performanslı bir ekran görüntüsü (screenshot) mikroservisidir.
 
 ---
 
-## ✨ Özellikler
+## ✨ Yeni Özellikler & Geliştirmeler
 
-- 🎯 **Element Bazlı Ekran Görüntüsü:** CSS seçicisi (selector) ile sayfanın tamamı yerine istenen spesifik HTML elementini yakalayabilme.
-- ⚡ **Hızlı ve Headless:** Puppeteer'ın optimize edilmiş `headless` Chrome motoru ile hızlı görsel oluşturma.
-- 🐳 **Docker & Docker Compose Desteği:** Kuruluma ihtiyaç duymadan tek komutla ayağa kaldırılabilen konteyner yapısı (`ghcr.io/puppeteer/puppeteer` tabanlı).
-- 🩺 **Sağlık Kontrolü (Health Check):** Servis durumunu kontrol edebilmek için hazır `/up` endpoint'i.
+- 🔐 **Header Tabanlı Kimlik Doğrulama (Auth Check):** `X-API-Key` veya `Authorization: Bearer <token>` başlıkları ile API güvenliği.
+- 📖 **Dahili İnteraktif Dokümantasyon:** `GET /` adresinde modern, şık ve anında test yapabileceğiniz canlı bir playground arayüzü.
+- 🎯 **Spesifik Endpoint Yapısı:** Ekran görüntüsü alma işlemi `POST /screenshot` (veya `POST /api/screenshot`) endpoint'ine taşındı.
+- 📐 **Gelişmiş Parametre Desteği:**
+  - `fullPage` (Tüm sayfa kaydırma çekimi)
+  - `element` (CSS selector bazlı öğe kırpma)
+  - `format` & `quality` (`png`, `jpeg`, `webp` formatları ve kalite ayarı)
+  - `width` & `height` (Çözünürlük ve viewport yapılandırması)
+  - `delay` & `waitForSelector` (Dinamik/SPA sayfalar için bekleme kuralları)
+- 🛡️ **Kaynak Yönetimi & Güvenlik:** Hata durumlarında bile tarayıcı nesnelerinin bellekten temizlenmesini sağlayan `finally` mimarisi.
 
 ---
 
 ## 🚀 Başlangıç & Kurulum
 
-Projeyi yerel ortamınızda veya Docker ile çalıştırabilirsiniz.
+### 1. Ortam Değişkenleri (.env)
 
-### Seçenek 1: Yerel Ortam (Node.js & Yarn)
-
-#### Gereksinimler
-- Node.js (v18+)
-- Yarn veya NPM
+Proje kök dizininde `.env.example` dosyasından bir `.env` oluşturun:
 
 ```bash
-# Bağımlılıkları yükleyin
-yarn install
-# veya
-npm install
-
-# Servisi başlatın
-yarn start
-# veya
-npm start
+cp .env.example .env
 ```
 
-Servis varsayılan olarak `http://localhost:3000` adresinde çalışacaktır.
+```env
+PORT=3000
+API_KEY=gizli_api_anahtariniz
+NODE_ENV=development
+DEFAULT_TIMEOUT=30000
+PUPPETEER_HEADLESS=true
+```
+
+> **Not:** `API_KEY` boş bırakılırsa servis genel erişime açık (public) modda çalışır. Değer verildiğinde tüm ekran görüntüsü isteklerinde Header kontrolü yapılır.
 
 ---
 
-### Seçenek 2: Docker & Docker Compose
+### 2. Yerel Ortamda Çalıştırma
 
-#### Docker Compose ile Çalıştırma (Önerilen)
 ```bash
-docker-compose up -d
+# Bağımlılıkları yükleyin
+npm install
+
+# Servisi başlatın
+npm start
+
+# Geliştirici modu (otomatik yeniden başlatma)
+npm run dev
 ```
 
-#### Dockerfile ile Build Edip Çalıştırma
+Sunucu başladıktan sonra tarayıcınızdan **`http://localhost:3000`** adresine giderek interaktif dokümantasyonu görüntüleyebilirsiniz.
+
+---
+
+### 3. Docker & Docker Compose ile Çalıştırma
+
+#### Docker Compose (Önerilen)
+
+```bash
+# Servisi arka planda başlatın
+docker compose up -d
+```
+
+#### Docker CLI ile
+
 ```bash
 # İmajı derleyin
 docker build -t screenshot-service .
 
-# Konteyneri başlatın
-docker run -p 3000:3000 screenshot-service
+# Konteyneri API_KEY tanımlayarak çalıştırın
+docker run -d -p 3000:3000 -e API_KEY=gizli_api_anahtariniz --name screenshot-app screenshot-service
 ```
 
 ---
 
-## 📡 API Kullanımı
+## 📡 API Dokümantasyonu
 
 ### 1. Ekran Görüntüsü Alma
 
-- **Endpoint:** `POST /`
-- **Content-Type:** `application/json` veya `application/x-www-form-urlencoded`
+- **URL:** `POST /screenshot` *(veya `POST /api/screenshot`)*
+- **Headers:**
+  - `Content-Type: application/json`
+  - `X-API-Key: <API_KEY>` veya `Authorization: Bearer <API_KEY>`
 
-#### İstek Gövdesi (Request Body)
+#### İstek Gövdesi (Body) Parametreleri
 
-| Parametre | Tip | Zorunlu mu? | Açıklama |
-|---|---|---|---|
-| `url` | `string` | Evet | Ekran görüntüsü alınacak web sayfasının tam adresi (örn: `https://example.com`) |
-| `element` | `string` | Evet | Yakalanacak HTML elementinin CSS seçicisi (örn: `h1`, `.card`, `#main-content`) |
+| Parametre | Tip | Zorunlu | Varsayılan | Açıklama |
+|---|---|---|---|---|
+| `url` | `string` | **Evet** | - | Yakalanacak web sayfasının adresi (örn: `https://tunahancaliskan.com`) |
+| `element` | `string` | Hayır | `null` | Spesifik bir elementi yakalamak için CSS seçicisi (örn: `h1`, `.card`, `#pricing`) |
+| `fullPage` | `boolean` | Hayır | `false` | `true` verilirse kaydırılabilir tüm sayfa yakalanır. |
+| `format` | `string` | Hayır | `png` | Çıktı formatı: `png`, `jpeg`, veya `webp` |
+| `quality` | `number` | Hayır | - | `jpeg` ve `webp` için kalite değeri (`1` - `100` arası) |
+| `width` | `number` | Hayır | `1920` | Tarayıcı genişliği (px) |
+| `height` | `number` | Hayır | `1080` | Tarayıcı yüksekliği (px) |
+| `delay` | `number` | Hayır | `0` | Çekim öncesi ek bekleme süresi (milisaniye, maks: 10000ms) |
+| `waitForSelector` | `string` | Hayır | `null` | Çekim öncesi DOM'da belirmesi beklenecek CSS seçicisi |
 
-#### Örnek cURL İsteği
+#### Örnek cURL Çağrısı
 
 ```bash
-curl -X POST http://localhost:3000/ \
+curl -X POST http://localhost:3000/screenshot \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: gizli_api_anahtariniz" \
   -d '{
     "url": "https://tunahancaliskan.com",
-    "element": "body"
+    "element": "body",
+    "format": "png",
+    "fullPage": false
   }' \
   --output screenshot.png
 ```
-
-#### Yanıt (Response)
-- **Status:** `200 OK`
-- **Content-Type:** `image/png`
-- **Body:** Binary PNG görsel verisi.
 
 ---
 
 ### 2. Sağlık Kontrolü (Health Check)
 
-- **Endpoint:** `GET /up`
-- **Yanıt:** `OK` (Status `200`)
+- **URL:** `GET /up` *(veya `GET /health`)*
+- **Örnek Yanıt (200 OK):**
 
-```bash
-curl http://localhost:3000/up
+```json
+{
+  "status": "OK",
+  "uptime": 128,
+  "timestamp": "2026-08-22T14:30:00.000Z",
+  "authRequired": true
+}
 ```
 
 ---
 
-## 📦 Docker Hub İmajı
+## 💻 Entegrasyon Örnekleri
 
-Bu servis [GitHub Actions](.github/workflows/docker-image.yml) aracılığıyla otomatik olarak Docker Hub üzerine yayınlanmaktadır:
+### JavaScript / Node.js (Fetch)
 
-```bash
-docker pull tnhnclskn/screenshot:latest
-docker run -p 3000:3000 tnhnclskn/screenshot:latest
+```javascript
+const response = await fetch('http://localhost:3000/screenshot', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'gizli_api_anahtariniz'
+  },
+  body: JSON.stringify({
+    url: 'https://tunahancaliskan.com',
+    element: '.hero',
+    format: 'webp'
+  })
+});
+
+const imageBlob = await response.blob();
+```
+
+### Python (Requests)
+
+```python
+import requests
+
+url = "http://localhost:3000/screenshot"
+headers = {
+    "Content-Type": "application/json",
+    "X-API-Key": "gizli_api_anahtariniz"
+}
+payload = {
+    "url": "https://tunahancaliskan.com",
+    "format": "png",
+    "fullPage": True
+}
+
+response = requests.post(url, json=payload, headers=headers)
+if response.status_code == 200:
+    with open("output.png", "wb") as f:
+        f.write(response.content)
 ```
 
 ---
@@ -124,4 +192,4 @@ docker run -p 3000:3000 tnhnclskn/screenshot:latest
 
 ## 📄 Lisans
 
-Bu proje [MIT](LICENSE) lisansı ile lisanslanmıştır.
+Bu proje [MIT](LICENSE) lisansı altında sunulmaktadır.

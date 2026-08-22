@@ -1,14 +1,17 @@
 {
-  "name": "ritimparaziti",
-  "version": "1.0.0",
+  "name": "screenshot",
+  "version": "1.1.0",
+  "description": "High-performance Node.js & Puppeteer screenshot microservice with Header Authentication",
   "main": "index.js",
-  "author": "Tunahan Caliskan <mail@tunahancaliskan.com>",
+  "author": "Tunahan Caliskan <mail@tunahancaliskan.com> (https://tunahancaliskan.com)",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "node --watch index.js"
   },
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "express": "^4.18.2",
-    "puppeteer": "^21.5.2"
+    "puppeteer": "^25.8.0"
   }
 }
