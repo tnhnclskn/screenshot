@@ -1,13 +1,16 @@
-FROM ghcr.io/puppeteer/puppeteer
+FROM ghcr.io/puppeteer/puppeteer:latest
+
+# Base imajda Chrome hazır olduğu için fazladan indirmeyi atla
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 WORKDIR /usr/src/app
 
-COPY package*.json yarn.lock ./
+COPY --chown=pptruser:pptruser package*.json ./
 
-RUN yarn
+RUN npm install --omit=dev
 
-COPY . .
+COPY --chown=pptruser:pptruser . .
 
 EXPOSE 3000
 
-CMD ["yarn", "start"]
+CMD ["node", "index.js"]

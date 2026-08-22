@@ -24,8 +24,12 @@ const healthHandler = (req, res) => {
 router.get('/up', healthHandler);
 router.get('/health', healthHandler);
 
-// 3. Ekran Görüntüsü Alma (Header Auth Korumalı)
+// 3. Ekran Görüntüsü Alma (URL veya JSON/HTML - Header Auth Korumalı)
 router.post('/screenshot', authMiddleware, handleScreenshot);
 router.post('/api/screenshot', authMiddleware, handleScreenshot);
+
+// 4. Doğrudan HTML'den Ekran Görüntüsü Alma
+router.post('/html', authMiddleware, handleScreenshot);
+router.post('/screenshot/html', authMiddleware, handleScreenshot);
 
 module.exports = router;

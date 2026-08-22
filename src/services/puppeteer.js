@@ -2,11 +2,12 @@ const puppeteer = require('puppeteer');
 const config = require('../config');
 
 /**
- * Puppeteer ile ekran görüntüsü alma servisi
+ * Puppeteer ile URL veya HTML'den ekran görüntüsü alma servisi
  */
 async function captureScreenshot(options) {
   let {
     url,
+    html,
     element,
     fullPage = false,
     format = 'png',
@@ -14,24 +15,25 @@ async function captureScreenshot(options) {
     width = 1920,
     height = 1080,
     deviceScaleFactor = 1,
-    waitUntil = 'networkidle2',
+    waitUntil,
     delay = 0,
     waitForSelector,
   } = options;
 
-  // URL formatını doğrula
-  if (!url.startsWith('http://') && !url.startsWith('https://')) {
-    url = `https://${url}`;
+  if (!url && !html) {
+    const error = new Error('Lütfen "url" veya "html" parametresinden en az birini belirtin.');
+    error.statusCode = 400;
+    throw error;
   }
 
   // Format kontrolü
   const validFormats = ['png', 'jpeg', 'webp'];
-  const imageFormat = validFormats.includes(format.toLowerCase()) ? format.toLowerCase() : 'png';
+  const imageFormat = validFormats.includes(format?.toLowerCase()) ? format.toLowerCase() : 'png';
 
   let browser = null;
 
   try {
-    browser = await puppeteer.launch({
+    const launchOptions = {
       headless: config.puppeteerHeadless ? 'new' : false,
       args: [
         '--no-sandbox',
@@ -42,7 +44,13 @@ async function captureScreenshot(options) {
         '--no-zygote',
         '--disable-gpu',
       ],
-    });
+    };
+
+    if (config.puppeteerExecutablePath) {
+      launchOptions.executablePath = config.puppeteerExecutablePath;
+    }
+
+    browser = await puppeteer.launch(launchOptions);
 
     const page = await browser.newPage();
 
@@ -53,11 +61,21 @@ async function captureScreenshot(options) {
       deviceScaleFactor: parseFloat(deviceScaleFactor) || 1,
     });
 
-    // Sayfaya git
-    await page.goto(url, {
-      waitUntil: waitUntil || 'networkidle2',
-      timeout: config.defaultTimeout,
-    });
+    // İçeriği yükle: HTML string mi yoksa URL mi?
+    if (html && typeof html === 'string' && html.trim() !== '') {
+      await page.setContent(html, {
+        waitUntil: waitUntil || 'networkidle0',
+        timeout: config.defaultTimeout,
+      });
+    } else {
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = `https://${url}`;
+      }
+      await page.goto(url, {
+        waitUntil: waitUntil || 'networkidle2',
+        timeout: config.defaultTimeout,
+      });
+    }
 
     // Ekstra gecikme gerekiyorsa
     if (delay > 0) {

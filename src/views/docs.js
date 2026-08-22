@@ -9,7 +9,7 @@ function renderDocsPage(config) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Screenshot API — Puppeteer ile Web Ekran Görüntüsü Servisi</title>
+  <title>Screenshot API — Puppeteer ile Web & HTML Ekran Görüntüsü Servisi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -215,6 +215,36 @@ function renderDocsPage(config) {
       gap: 0.6rem;
     }
 
+    /* Mode Switcher */
+    .mode-switcher {
+      display: flex;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.25rem;
+      margin-bottom: 1.25rem;
+      gap: 0.25rem;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 0.55rem;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 8px var(--primary-glow);
+    }
+
     /* Playground */
     .form-group {
       margin-bottom: 1.15rem;
@@ -234,7 +264,7 @@ function renderDocsPage(config) {
       gap: 1rem;
     }
 
-    input, select {
+    input, select, textarea {
       width: 100%;
       padding: 0.7rem 0.9rem;
       background: rgba(15, 23, 42, 0.8);
@@ -246,7 +276,15 @@ function renderDocsPage(config) {
       transition: all 0.2s;
     }
 
-    input:focus, select:focus {
+    textarea {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.8rem;
+      line-height: 1.4;
+      resize: vertical;
+      min-height: 140px;
+    }
+
+    input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--primary);
       box-shadow: 0 0 0 3px var(--primary-glow);
@@ -409,6 +447,7 @@ function renderDocsPage(config) {
       margin-bottom: 0.75rem;
       border-bottom: 1px solid var(--border);
       padding-bottom: 0.5rem;
+      flex-wrap: wrap;
     }
 
     .tab-btn {
@@ -473,11 +512,11 @@ function renderDocsPage(config) {
         <div class="logo-icon">📸</div>
         <div class="logo-text">
           <h1>Screenshot API</h1>
-          <p>Puppeteer Tabanlı Ekran Görüntüsü Mikroservisi</p>
+          <p>URL & Doğrudan HTML Ekran Görüntüsü Servisi</p>
         </div>
       </div>
       <div class="header-links">
-        <span class="badge badge-success">● v1.0.0</span>
+        <span class="badge badge-success">● v1.1.0</span>
         <span class="badge badge-auth">${isAuthEnabled ? '🔒 Auth Aktif' : '🔓 Public Mode'}</span>
         <a href="https://github.com/tnhnclskn/screenshot" target="_blank" class="btn-link">GitHub ↗</a>
       </div>
@@ -485,9 +524,9 @@ function renderDocsPage(config) {
 
     <!-- Hero Section -->
     <section class="hero">
-      <div class="hero-tag">⚡ Yüksek Performanslı & Docker Uyumlu</div>
-      <h2>Web Ekran Görüntülerini Anında Alın</h2>
-      <p>İster tüm sayfayı, ister CSS seçicisiyle (selector) spesifik bir elementi yakalayın. Header kimlik doğrulaması ve zengin parametre desteği ile hazır.</p>
+      <div class="hero-tag">⚡ URL veya Doğrudan HTML'den Çekim</div>
+      <h2>Web & HTML Ekran Görüntülerini Anında Alın</h2>
+      <p>Canlı bir web sitesinin veya doğrudan POST ettiğiniz ham HTML kodunun ekran görüntüsünü PNG, JPEG veya WEBP formatında elde edin.</p>
     </section>
 
     <div class="grid">
@@ -495,19 +534,36 @@ function renderDocsPage(config) {
       <!-- Interactive Playground -->
       <div class="card">
         <div class="card-title">🧪 Canlı Test Alanı (Playground)</div>
-        <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;">
-          Aşağıdaki formu kullanarak anında canlı ekran görüntüsü isteği oluşturup test edebilirsiniz.
-        </p>
+
+        <!-- Mode Switcher -->
+        <div class="mode-switcher">
+          <button type="button" class="mode-btn active" id="btnModeUrl" onclick="switchInputMode('url')">🌐 URL ile Çekim</button>
+          <button type="button" class="mode-btn" id="btnModeHtml" onclick="switchInputMode('html')">📝 HTML POST ile Çekim</button>
+        </div>
 
         <form id="playgroundForm">
-          <div class="form-group">
+          
+          <!-- URL Input Group -->
+          <div class="form-group" id="groupUrl">
             <label for="pUrl">Hedef URL *</label>
-            <input type="text" id="pUrl" placeholder="https://tunahancaliskan.com" required value="https://tunahancaliskan.com">
+            <input type="text" id="pUrl" placeholder="https://tunahancaliskan.com" value="https://tunahancaliskan.com">
+          </div>
+
+          <!-- HTML Input Group -->
+          <div class="form-group" id="groupHtml" style="display:none;">
+            <label for="pHtml">Ham HTML Kodu (CSS ve stiller dahil) *</label>
+            <textarea id="pHtml" placeholder="<div style='background: linear-gradient(135deg, #6366f1, #06b6d4); color: white; padding: 40px; border-radius: 16px; font-family: sans-serif; text-align: center;'><h1>Merhaba Dünya! 🚀</h1><p>Bu görsel doğrudan POST edilen HTML kodundan üretildi.</p></div>"><div style="background: linear-gradient(135deg, #4f46e5, #06b6d4); color: white; padding: 60px; border-radius: 20px; font-family: system-ui, -apple-system, sans-serif; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+  <h1 style="font-size: 2.5rem; margin-bottom: 12px;">Merhaba Tunahan! 🚀</h1>
+  <p style="font-size: 1.2rem; opacity: 0.9;">Bu görsel doğrudan POST edilen HTML kodundan render edildi.</p>
+  <div style="margin-top: 24px; display: inline-block; background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 30px; font-weight: bold;">
+    ✨ Screenshot Microservice
+  </div>
+</div></textarea>
           </div>
 
           <div class="form-group">
             <label for="pElement">Element CSS Seçicisi (Opsiyonel)</label>
-            <input type="text" id="pElement" placeholder="h1, .hero, #main (Tüm sayfa için boş bırakın)">
+            <input type="text" id="pElement" placeholder="h1, .card, #main (Tüm sayfa için boş bırakın)">
           </div>
 
           <div class="form-row">
@@ -553,7 +609,7 @@ function renderDocsPage(config) {
       <div class="card">
         <div class="card-title">🔐 Kimlik Doğrulama (Auth)</div>
         <p style="color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1rem;">
-          Sunucuda <code>API_KEY</code> ortam değişkeni tanımlandığında, isteklerinizde aşağıdaki başlıklardan birini göndermeniz gerekmektedir:
+          Sunucuda <code>API_KEY</code> ortam değişkeni tanımlandığında isteklerinizde aşağıdaki başlıklardan birini göndermeniz gerekmektedir:
         </p>
 
         <div class="code-container">
@@ -569,12 +625,21 @@ Authorization: Bearer YOUR_SECRET_API_KEY</code></pre>
         <div class="card-title" style="margin-top: 1.5rem;">🔌 API Endpoint'leri</div>
         
         <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.75rem;">
+          
           <div style="padding: 0.75rem; background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
             <div>
               <span class="method-badge method-post">POST</span>
-              <code>/screenshot</code> <span style="color: var(--text-muted); font-size: 0.8rem;">(veya <code>/api/screenshot</code>)</span>
+              <code>/screenshot</code>
             </div>
-            <span style="font-size: 0.75rem; color: var(--text-muted);">Görsel Döndürür</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">URL veya JSON HTML</span>
+          </div>
+
+          <div style="padding: 0.75rem; background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <span class="method-badge method-post">POST</span>
+              <code>/html</code>
+            </div>
+            <span style="font-size: 0.75rem; color: #a855f7;">Doğrudan HTML Post</span>
           </div>
 
           <div style="padding: 0.75rem; background: rgba(0,0,0,0.25); border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
@@ -590,8 +655,9 @@ Authorization: Bearer YOUR_SECRET_API_KEY</code></pre>
               <span class="method-badge method-get">GET</span>
               <code>/</code>
             </div>
-            <span style="font-size: 0.75rem; color: #38bdf8;">Bu Dokümantasyon</span>
+            <span style="font-size: 0.75rem; color: #38bdf8;">Dokümantasyon</span>
           </div>
+
         </div>
       </div>
 
@@ -599,9 +665,9 @@ Authorization: Bearer YOUR_SECRET_API_KEY</code></pre>
 
     <!-- Parameter Reference Card -->
     <div class="card" style="margin-bottom: 3rem;">
-      <div class="card-title">📋 <code>POST /screenshot</code> Parametre Referansı</div>
+      <div class="card-title">📋 İstek Parametre Referansı</div>
       <p style="color: var(--text-muted); font-size: 0.875rem;">
-        İsteklerinizi <code>application/json</code> veya <code>application/x-www-form-urlencoded</code> formatında gönderebilirsiniz.
+        İsteklerinizi <code>application/json</code>, <code>application/x-www-form-urlencoded</code> veya <code>text/html</code> olarak gönderebilirsiniz.
       </p>
 
       <table>
@@ -618,16 +684,23 @@ Authorization: Bearer YOUR_SECRET_API_KEY</code></pre>
           <tr>
             <td><code>url</code></td>
             <td>string</td>
-            <td><strong style="color: #34d399;">Evet</strong></td>
+            <td><strong>Opsiyonel*</strong></td>
             <td>-</td>
             <td>Görüntülenecek web sitesi adresi (örn: <code>https://tunahancaliskan.com</code>).</td>
+          </tr>
+          <tr>
+            <td><code>html</code></td>
+            <td>string</td>
+            <td><strong>Opsiyonel*</strong></td>
+            <td>-</td>
+            <td>Doğrudan render edilecek ham HTML dizesi (CSS ve stilleri içerebilir).</td>
           </tr>
           <tr>
             <td><code>element</code></td>
             <td>string</td>
             <td>Hayır</td>
             <td><code>null</code></td>
-            <td>Spesifik bir öğeyi yakalamak için CSS seçicisi (örn: <code>.hero-header</code>, <code>#pricing</code>).</td>
+            <td>Spesifik bir öğeyi yakalamak için CSS seçicisi (örn: <code>.hero</code>, <code>#card</code>).</td>
           </tr>
           <tr>
             <td><code>fullPage</code></td>
@@ -669,10 +742,13 @@ Authorization: Bearer YOUR_SECRET_API_KEY</code></pre>
             <td>string</td>
             <td>Hayır</td>
             <td>-</td>
-            <td>Çekimden önce sayfada yüklenmesi beklenecek DOM element seçicisi.</td>
+            <td>Çekimden önce DOM'da belirmesi beklenecek element seçicisi.</td>
           </tr>
         </tbody>
       </table>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.75rem;">
+        * <code>url</code> veya <code>html</code> parametrelerinden en az birinin belirtilmesi zorunludur.
+      </p>
     </div>
 
     <!-- Code Examples -->
@@ -680,18 +756,45 @@ Authorization: Bearer YOUR_SECRET_API_KEY</code></pre>
       <div class="card-title">💻 Entegrasyon Kod Örnekleri</div>
       
       <div class="tab-nav">
-        <button class="tab-btn active" onclick="showTab('curlTab', this)">cURL</button>
-        <button class="tab-btn" onclick="showTab('jsTab', this)">JavaScript (Fetch)</button>
+        <button class="tab-btn active" onclick="showTab('htmlCurlTab', this)">cURL (HTML POST)</button>
+        <button class="tab-btn" onclick="showTab('urlCurlTab', this)">cURL (URL POST)</button>
+        <button class="tab-btn" onclick="showTab('jsTab', this)">JavaScript (Fetch HTML)</button>
         <button class="tab-btn" onclick="showTab('pyTab', this)">Python</button>
         <button class="tab-btn" onclick="showTab('phpTab', this)">PHP</button>
-        <button class="tab-btn" onclick="showTab('nodeTab', this)">Node.js (Axios)</button>
+        <button class="tab-btn" onclick="showTab('nodeTab', this)">Node.js</button>
       </div>
 
-      <!-- cURL -->
-      <div id="curlTab" class="tab-content">
+      <!-- HTML cURL -->
+      <div id="htmlCurlTab" class="tab-content">
         <div class="code-container">
           <div class="code-header">
-            <span>Terminal / cURL</span>
+            <span>Terminal / cURL (Ham HTML Gönderimi)</span>
+            <button class="copy-btn" onclick="copyCode('htmlCurlSnippet')">Kopyala</button>
+          </div>
+          <pre id="htmlCurlSnippet"><code># 1. Yöntem: JSON İçinde HTML Gönderimi
+curl -X POST http://localhost:${config.port}/screenshot \\
+  -H "Content-Type: application/json" \\
+  -H "X-API-Key: YOUR_API_KEY" \\
+  -d '{
+    "html": "&lt;h1 style=\\"color: #6366f1;\\"&gt;Merhaba Dünya&lt;/h1&gt;",
+    "format": "png"
+  }' \\
+  --output html_screenshot.png
+
+# 2. Yöntem: Doğrudan text/html Olarak Gönderim
+curl -X POST http://localhost:${config.port}/html \\
+  -H "Content-Type: text/html" \\
+  -H "X-API-Key: YOUR_API_KEY" \\
+  -d '&lt;div style="background: #111; color: #fff; padding: 40px;"&gt;&lt;h1&gt;HTML Screenshot&lt;/h1&gt;&lt;/div&gt;' \\
+  --output direct_html.png</code></pre>
+        </div>
+      </div>
+
+      <!-- URL cURL -->
+      <div id="urlCurlTab" class="tab-content" style="display:none;">
+        <div class="code-container">
+          <div class="code-header">
+            <span>Terminal / cURL (URL Gönderimi)</span>
             <button class="copy-btn" onclick="copyCode('curlSnippet')">Kopyala</button>
           </div>
           <pre id="curlSnippet"><code>curl -X POST http://localhost:${config.port}/screenshot \\
@@ -700,10 +803,10 @@ Authorization: Bearer YOUR_SECRET_API_KEY</code></pre>
   -d '{
     "url": "https://tunahancaliskan.com",
     "element": "body",
-    "format": "png",
+    "format": "webp",
     "fullPage": false
   }' \\
-  --output screenshot.png</code></pre>
+  --output screenshot.webp</code></pre>
         </div>
       </div>
 
@@ -711,18 +814,24 @@ Authorization: Bearer YOUR_SECRET_API_KEY</code></pre>
       <div id="jsTab" class="tab-content" style="display:none;">
         <div class="code-container">
           <div class="code-header">
-            <span>JavaScript (Browser / Node)</span>
+            <span>JavaScript (HTML Render & Fetch)</span>
             <button class="copy-btn" onclick="copyCode('jsSnippet')">Kopyala</button>
           </div>
-          <pre id="jsSnippet"><code>const response = await fetch('http://localhost:${config.port}/screenshot', {
+          <pre id="jsSnippet"><code>const htmlContent = \`
+  &lt;div style="background: linear-gradient(135deg, #6366f1, #06b6d4); color: white; padding: 50px; border-radius: 12px; font-family: sans-serif;"&gt;
+    &lt;h1&gt;Dinamik Kart&lt;/h1&gt;
+    &lt;p&gt;Bu alan JavaScript tarafından gönderilen HTML'den üretildi.&lt;/p&gt;
+  &lt;/div&gt;
+\`;
+
+const response = await fetch('http://localhost:${config.port}/screenshot', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
     'X-API-Key': 'YOUR_API_KEY'
   },
   body: JSON.stringify({
-    url: 'https://tunahancaliskan.com',
-    element: '.hero',
+    html: htmlContent,
     format: 'png'
   })
 });
@@ -736,7 +845,7 @@ const imageUrl = URL.createObjectURL(blob);</code></pre>
       <div id="pyTab" class="tab-content" style="display:none;">
         <div class="code-container">
           <div class="code-header">
-            <span>Python (requests)</span>
+            <span>Python (HTML Screenshot)</span>
             <button class="copy-btn" onclick="copyCode('pySnippet')">Kopyala</button>
           </div>
           <pre id="pySnippet"><code>import requests
@@ -747,14 +856,13 @@ headers = {
     "X-API-Key": "YOUR_API_KEY"
 }
 payload = {
-    "url": "https://tunahancaliskan.com",
-    "format": "webp",
-    "fullPage": True
+    "html": "&lt;h1 style='color:purple;'&gt;Python HTML Render&lt;/h1&gt;",
+    "format": "webp"
 }
 
 response = requests.post(url, json=payload, headers=headers)
 if response.status_code == 200:
-    with open("screenshot.webp", "wb") as f:
+    with open("html_output.webp", "wb") as f:
         f.write(response.content)</code></pre>
         </div>
       </div>
@@ -763,13 +871,13 @@ if response.status_code == 200:
       <div id="phpTab" class="tab-content" style="display:none;">
         <div class="code-container">
           <div class="code-header">
-            <span>PHP (cURL)</span>
+            <span>PHP (HTML Screenshot)</span>
             <button class="copy-btn" onclick="copyCode('phpSnippet')">Kopyala</button>
           </div>
           <pre id="phpSnippet"><code>&lt;?php
 $ch = curl_init('http://localhost:${config.port}/screenshot');
 $data = json_encode([
-    'url' => 'https://tunahancaliskan.com',
+    'html' => '&lt;h1 style="color: #6366f1;"&gt;PHP ile HTML Ekran Görüntüsü&lt;/h1&gt;',
     'format' => 'png'
 ]);
 
@@ -782,7 +890,7 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
 ]);
 
 $result = curl_exec($ch);
-file_put_contents('screenshot.png', $result);
+file_put_contents('html_screenshot.png', $result);
 curl_close($ch);
 ?&gt;</code></pre>
         </div>
@@ -798,19 +906,19 @@ curl_close($ch);
           <pre id="nodeSnippet"><code>const axios = require('axios');
 const fs = require('fs');
 
-async function getScreenshot() {
+async function captureHtml() {
   const response = await axios.post('http://localhost:${config.port}/screenshot', {
-    url: 'https://tunahancaliskan.com',
+    html: '&lt;h1&gt;Node.js HTML Render&lt;/h1&gt;',
     format: 'png'
   }, {
     headers: { 'X-API-Key': 'YOUR_API_KEY' },
     responseType: 'arraybuffer'
   });
 
-  fs.writeFileSync('screenshot.png', response.data);
+  fs.writeFileSync('output.png', response.data);
 }
 
-getScreenshot();</code></pre>
+captureHtml();</code></pre>
         </div>
       </div>
 
@@ -830,6 +938,28 @@ getScreenshot();</code></pre>
   </div>
 
   <script>
+    let currentInputMode = 'url';
+
+    function switchInputMode(mode) {
+      currentInputMode = mode;
+      const groupUrl = document.getElementById('groupUrl');
+      const groupHtml = document.getElementById('groupHtml');
+      const btnModeUrl = document.getElementById('btnModeUrl');
+      const btnModeHtml = document.getElementById('btnModeHtml');
+
+      if (mode === 'url') {
+        groupUrl.style.display = 'block';
+        groupHtml.style.display = 'none';
+        btnModeUrl.classList.add('active');
+        btnModeHtml.classList.remove('active');
+      } else {
+        groupUrl.style.display = 'none';
+        groupHtml.style.display = 'block';
+        btnModeUrl.classList.remove('active');
+        btnModeHtml.classList.add('active');
+      }
+    }
+
     // Tab Değişimi
     function showTab(tabId, el) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
@@ -864,11 +994,16 @@ getScreenshot();</code></pre>
       btnText.innerHTML = '<span class="spinner"></span> Ekran Görüntüsü Alınıyor...';
 
       const payload = {
-        url: document.getElementById('pUrl').value,
-        element: document.getElementById('pElement').value || undefined,
         format: document.getElementById('pFormat').value,
-        fullPage: document.getElementById('pFullPage').value === 'true'
+        fullPage: document.getElementById('pFullPage').value === 'true',
+        element: document.getElementById('pElement').value || undefined
       };
+
+      if (currentInputMode === 'url') {
+        payload.url = document.getElementById('pUrl').value;
+      } else {
+        payload.html = document.getElementById('pHtml').value;
+      }
 
       const headers = {
         'Content-Type': 'application/json'

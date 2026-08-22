@@ -5,9 +5,10 @@ const errorHandler = require('./src/middleware/errorHandler');
 
 const app = express();
 
-// Body Parser Middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+// Body Parser Middlewares
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+app.use(express.text({ type: ['text/html', 'text/plain'], limit: '15mb' }));
 
 // CORS Desteği
 app.use((req, res, next) => {
@@ -41,6 +42,7 @@ const server = app.listen(config.port, () => {
   console.log(`📡 Port: ${config.port}`);
   console.log(`🌐 Dokümantasyon: http://localhost:${config.port}`);
   console.log(`📸 Screenshot Endpoint: POST http://localhost:${config.port}/screenshot`);
+  console.log(`📄 HTML Screenshot Endpoint: POST http://localhost:${config.port}/html`);
   console.log(`🔐 Kimlik Doğrulama: ${config.apiKey ? 'Aktif (Header Kontrolü)' : 'Devre Dışı (Public Mode)'}\n`);
 });
 

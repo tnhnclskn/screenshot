@@ -6,4 +6,5 @@ module.exports = {
   nodeEnv: process.env.NODE_ENV || 'development',
   defaultTimeout: parseInt(process.env.DEFAULT_TIMEOUT || '30000', 10),
   puppeteerHeadless: process.env.PUPPETEER_HEADLESS !== 'false',
+  puppeteerExecutablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
 };
