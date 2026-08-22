@@ -16,7 +16,7 @@ Node.js, Express ve Puppeteer kullanılarak geliştirilmiş; Header tabanlı kim
   - `format` & `quality` (`png`, `jpeg`, `webp` formatları ve kalite ayarı)
   - `width` & `height` (Çözünürlük ve viewport yapılandırması)
   - `delay` & `waitForSelector` (Dinamik/SPA sayfalar için bekleme kuralları)
-- 🐳 **Docker & Docker Compose Desteği:** Tek komutla ayağa kaldırılabilen optimize edilmiş konteyner yapısı.
+- 🐳 **GitHub Container Registry (GHCR) Entegrasyonu:** `ghcr.io/tnhnclskn/screenshot:latest` üzerinden tek komutla çalıştırılabilir konteyner yapısı.
 
 ---
 
@@ -59,13 +59,23 @@ Sunucu başladıktan sonra tarayıcınızdan **`http://localhost:3000`** adresin
 
 ### 3. Docker & Docker Compose ile Çalıştırma
 
-#### Docker Compose (Önerilen)
+#### GHCR'dan Hazır İmajı Çekme (GitHub Container Registry)
+
+```bash
+# GitHub Packages (GHCR)'dan imajı indirin
+docker pull ghcr.io/tnhnclskn/screenshot:latest
+
+# Konteyneri başlatın
+docker run -d -p 3000:3000 -e API_KEY=gizli_api_anahtariniz --name screenshot-app ghcr.io/tnhnclskn/screenshot:latest
+```
+
+#### Docker Compose ile Çalıştırma (Önerilen)
 
 ```bash
 docker compose up -d
 ```
 
-#### Docker CLI ile
+#### Docker CLI ile Yerel Build
 
 ```bash
 docker build -t screenshot-service .
