@@ -222,7 +222,7 @@ async function recordPage(options = {}) {
 
     // Kayıt süresi boyunca scroll veya pürüzsüz frame üretimi
     if (scroll === true || scroll === 'true') {
-      await autoScrollSmooth(page, durationMs);
+      await autoScrollSmooth(page, durationMs, targetFps);
     } else {
       const frameInterval = Math.max(20, Math.round(1000 / targetFps));
       const startTime = Date.now();
