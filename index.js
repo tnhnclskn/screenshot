@@ -3,6 +3,14 @@ const config = require('./src/config');
 const routes = require('./src/routes');
 const errorHandler = require('./src/middleware/errorHandler');
 
+// EPIPE ve ECONNRESET gibi istemci/ffmpeg socket kopmalarında çöküşü önle
+process.on('uncaughtException', (err) => {
+  if (err && (err.code === 'EPIPE' || err.code === 'ECONNRESET')) {
+    return;
+  }
+  console.error('Kritik Hata (Uncaught Exception):', err);
+});
+
 const app = express();
 
 // Body Parser Middlewares

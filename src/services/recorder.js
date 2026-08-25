@@ -108,10 +108,15 @@ async function recordPage(options = {}) {
     browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
 
+    let targetWidth = parseInt(width, 10) || 1920;
+    let targetHeight = parseInt(height, 10) || 1080;
+    targetWidth = targetWidth - (targetWidth % 2);
+    targetHeight = targetHeight - (targetHeight % 2);
+
     // Viewport ayarı
     await page.setViewport({
-      width: parseInt(width, 10) || 1920,
-      height: parseInt(height, 10) || 1080,
+      width: targetWidth,
+      height: targetHeight,
       deviceScaleFactor: parseFloat(deviceScaleFactor) || 1,
     });
 
@@ -184,27 +189,9 @@ async function recordPage(options = {}) {
       }, hideSelectors, removeSelectors);
     }
 
-    // Statik sayfalarda Chromium screencast kare üretimini canlı tutmak için görünmez ticker enjeksiyonu
-    await page.evaluate(() => {
-      if (!document.getElementById('__screencast_ticker__')) {
-        const ticker = document.createElement('div');
-        ticker.id = '__screencast_ticker__';
-        ticker.style.cssText = 'position:fixed;bottom:0;right:0;width:1px;height:1px;pointer-events:none;z-index:2147483647;opacity:0.01;';
-        document.body.appendChild(ticker);
-        let tickCount = 0;
-        function updateTick() {
-          tickCount++;
-          ticker.style.backgroundColor = tickCount % 2 === 0 ? 'rgba(0,0,0,0.01)' : 'rgba(0,0,0,0.02)';
-          requestAnimationFrame(updateTick);
-        }
-        requestAnimationFrame(updateTick);
-      }
-    }).catch(() => {});
-
     // Screencast seçenekleri
     const screencastOptions = {
       path: tempFilePath,
-      format: videoFormat,
       fps: targetFps,
       ffmpegPath: config.ffmpegPath,
     };
@@ -233,15 +220,26 @@ async function recordPage(options = {}) {
     // Kaydı Başlat
     const recorder = await page.screencast(screencastOptions);
 
-    // Kayıt süresi boyunca scroll veya bekleme
+    // Kayıt süresi boyunca scroll veya pürüzsüz frame üretimi
     if (scroll === true || scroll === 'true') {
       await autoScrollSmooth(page, durationMs);
     } else {
-      await new Promise((resolve) => setTimeout(resolve, durationMs));
+      const frameInterval = Math.max(20, Math.round(1000 / targetFps));
+      const startTime = Date.now();
+      let frameIndex = 0;
+      while (Date.now() - startTime < durationMs) {
+        frameIndex++;
+        await page.evaluate((f) => {
+          document.body.style.opacity = (f % 2 === 0) ? '0.999' : '1';
+        }, frameIndex).catch(() => {});
+        await new Promise((resolve) => setTimeout(resolve, frameInterval));
+      }
     }
 
     // Kaydı Durdur
-    await recorder.stop();
+    try {
+      await recorder.stop();
+    } catch (_) {}
 
     // Üretilen video dosyasını oku
     const buffer = await fs.promises.readFile(tempFilePath);
