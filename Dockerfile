@@ -1,4 +1,4 @@
-FROM node:20-bookworm-slim
+FROM node:22-bookworm-slim
 
 # Chromium, FFmpeg, sistem fontları ve Puppeteer bağımlılıklarını kur
 RUN apt-get update && \

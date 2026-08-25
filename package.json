@@ -4,6 +4,9 @@
   "description": "High-performance Node.js & Puppeteer screenshot microservice with Header Authentication",
   "main": "index.js",
   "author": "Tunahan Caliskan <mail@tunahancaliskan.com> (https://tunahancaliskan.com)",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js",
