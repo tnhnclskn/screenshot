@@ -1,99 +1,107 @@
-# 📸 Web & HTML Screenshot Service
+# 📸 🎥 Web & HTML Screenshot & Video Recording Service
 
-Node.js, Express ve Puppeteer kullanılarak geliştirilmiş; Header tabanlı kimlik doğrulama (Auth Check), doğrudan HTML POST render desteği, interaktif canlı dokümantasyon arayüzü ve gelişmiş özelleştirme parametrelerine sahip yüksek performanslı bir ekran görüntüsü (screenshot) mikroservisidir.
+Node.js, Express ve Puppeteer kullanılarak geliştirilmiş; Header tabanlı kimlik doğrulama (Auth Check), doğrudan HTML POST render desteği, akıcı video/screencast kaydı (MP4, WebM, GIF, Smooth Auto-scroll), interaktif canlı dokümantasyon (Playground) arayüzü ve gelişmiş özelleştirme parametrelerine sahip yüksek performanslı mikroservis.
 
 ---
 
 ## ✨ Özellikler & Yetenekler
 
-- 📝 **Doğrudan HTML POST ile Görsel Üretme:** Canlı web URL'lerinin yanı sıra, API'ye gönderdiğiniz ham HTML & CSS kodlarını anında görsele dönüştürün (`POST /html` veya `POST /screenshot` ile `{ "html": "..." }`).
-- 🌐 **Web Sayfası URL Ekran Görüntüsü:** İster tüm sayfayı (`fullPage`), ister CSS seçicisi (`element`) ile belirli bir DOM öğesini yakalayın.
-- 🔐 **Header Tabanlı Kimlik Doğrulama (Auth Check):** `X-API-Key` veya `Authorization: Bearer <token>` başlıkları ile API güvenliği.
-- 📖 **Dahili İnteraktif Dokümantasyon:** `GET /` adresinde canlı test (playground) yapabileceğiniz modern ve şık arayüz.
+- 📸 **Görsel Ekran Görüntüsü (Screenshot):** Web URL'lerinden veya doğrudan ham HTML POST içeriğinden anında yüksek kaliteli ekran görüntüleri (`png`, `jpeg`, `webp`).
+- 🎥 **Video & Screencast Kaydı (Screen Recording):** Web sayfalarının veya ham HTML içeriklerinin `mp4` (H.264), `webm` (VP8/VP9) veya `gif` animasyon formatlarında akıcı video kaydını alın (Maks. 60 saniye).
+- 📜 **Smooth Auto-scroll (Otomatik Kaydırma):** Video kaydı boyunca sayfayı yukarıdan aşağıya yumuşak bir eğriyle kaydırarak tüm sayfa akışını kaydedin.
+- 📝 **Doğrudan HTML POST Desteği:** Canlı bir web sayfasına ihtiyaç duymadan, API'ye gönderdiğiniz ham HTML & CSS kodlarını doğrudan görsele veya animasyonlu videoya dönüştürün.
+- 🔐 **Header Tabanlı Kimlik Doğrulama (Auth Check):** `X-API-Key` veya `Authorization: Bearer <token>` başlıkları ile güvenli erişim.
+- 🧪 **Dahili İnteraktif Dokümantasyon & Playground:** `GET /` adresinde Screenshot ve Video Kaydı senaryolarını test edebileceğiniz modern karanlık tema arayüz.
 - 📐 **Gelişmiş Parametre Desteği:**
-  - `fullPage` (Tüm sayfa kaydırma çekimi)
-  - `element` (CSS selector bazlı öğe kırpma)
-  - `format` & `quality` (`png`, `jpeg`, `webp` formatları ve kalite ayarı)
-  - `width` & `height` (Çözünürlük ve viewport yapılandırması)
-  - `delay` & `waitForSelector` (Dinamik/SPA sayfalar için bekleme kuralları)
-- 🐳 **GitHub Container Registry (GHCR) Entegrasyonu:** `ghcr.io/tnhnclskn/screenshot:latest` üzerinden tek komutla çalıştırılabilir konteyner yapısı.
+  - `duration` & `fps` (Video süresi ve kare hızı)
+  - `format` (`png`, `jpeg`, `webp`, `mp4`, `webm`, `gif`)
+  - `scroll` (Yumuşak otomatik sayfa kaydırma)
+  - `fullPage` (Tüm sayfa dikey kaydırmalı ekran görüntüsü)
+  - `element` (CSS selector bazlı belirli DOM öğesini kırpma)
+  - `quality` (Görsel ve video sıkıştırma kalitesi)
+  - `width` & `height` (Viewport çözünürlük yapılandırması)
+  - `deviceScaleFactor` (HiDPI / Retina ölçekleme)
+  - `delay` & `waitForSelector` (Dinamik/SPA/animasyonlu sayfalar için bekleme kuralları)
+- 🐳 **GitHub Container Registry (GHCR) & Docker Desteği:** Tek komutla çalıştırılabilir ve kolayca dağıtılabilir konteyner altyapısı.
 
 ---
 
-## 🚀 Başlangıç & Kurulum
+## 🔌 API Endpoint'leri
 
-### 1. Ortam Değişkenleri (.env)
-
-```bash
-cp .env.example .env
-```
-
-```env
-PORT=3000
-API_KEY=gizli_api_anahtariniz
-NODE_ENV=development
-DEFAULT_TIMEOUT=30000
-PUPPETEER_HEADLESS=true
-```
-
-> **Not:** `API_KEY` boş bırakılırsa servis genel erişime açık (public) modda çalışır. Değer verildiğinde tüm isteklerde Header kontrolü yapılır.
+| Metot | Endpoint | Açıklama |
+|---|---|---|
+| `POST` | `/screenshot`, `/api/screenshot` | Web URL veya JSON içindeki HTML'den ekran görüntüsü alma |
+| `POST` | `/html`, `/screenshot/html` | Doğrudan ham `text/html` gövdesiyle ekran görüntüsü alma |
+| `POST` | `/record`, `/video`, `/api/record` | Web URL veya JSON HTML'den video/screencast kaydı alma (`mp4`, `webm`, `gif`) |
+| `POST` | `/html/record`, `/record/html` | Doğrudan ham `text/html` gövdesiyle video/GIF kaydı alma |
+| `GET` | `/health`, `/up` | Servis sağlık kontrolü (Healthcheck) |
+| `GET` | `/` | Dahili interaktif dokümantasyon ve canlı test arayüzü (Playground) |
 
 ---
 
-### 2. Yerel Ortamda Çalıştırma
+## 📋 İstek Parametreleri (Request Body / Query)
 
-```bash
-# Bağımlılıkları yükleyin
-npm install
+İsteklerinizi `application/json`, `application/x-www-form-urlencoded` veya `text/html` olarak gönderebilirsiniz.
 
-# Servisi başlatın
-npm start
+| Parametre | Tip | Zorunlu | Varsayılan | Açıklama |
+|---|---|---|---|---|
+| `url` | `string` | **Opsiyonel*** | - | Yakalanacak veya kaydedilecek web sayfasının tam adresi |
+| `html` | `string` | **Opsiyonel*** | - | Doğrudan render edilecek ham HTML/CSS dizesi |
+| `duration` | `number` | Hayır | `5` | Video kayıt süresi saniye cinsinden (`1` ile `60` sn arası) |
+| `fps` | `number` | Hayır | `30` | Video kare hızı (`1` ile `60` FPS arası) |
+| `format` | `string` | Hayır | `png` / `mp4` | Çıktı formatı. Screenshot: `png`, `jpeg`, `webp` | Video: `mp4`, `webm`, `gif` |
+| `scroll` | `boolean` | Hayır | `false` | Video kaydında sayfayı yumuşak bir şekilde aşağı kaydırmak için `true` verin |
+| `element` | `string` | Hayır | `null` | Spesifik bir DOM öğesini yakalamak için CSS seçicisi (`h1`, `.card`, `#pricing`) |
+| `fullPage` | `boolean` | Hayır | `false` | Screenshot için `true` verilirse tüm sayfa kaydırılarak yakalanır |
+| `quality` | `number` | Hayır | - | JPEG/WEBP veya video sıkıştırma kalitesi (`1` - `100` arası) |
+| `width` | `number` | Hayır | `1920` | Tarayıcı viewport genişliği (px) |
+| `height` | `number` | Hayır | `1080` | Tarayıcı viewport yüksekliği (px) |
+| `deviceScaleFactor` | `number` | Hayır | `1` | Retina / HiDPI ekran ölçekleme katsayısı |
+| `delay` | `number` | Hayır | `0` | Çekim/kayıt öncesi ek bekleme süresi (ms, maks 10000ms) |
+| `waitForSelector` | `string` | Hayır | `null` | Sayfada veya DOM'da belirmesi beklenecek CSS seçicisi |
 
-# Geliştirici modu (otomatik yeniden başlatma)
-npm run dev
-```
-
-Sunucu başladıktan sonra tarayıcınızdan **`http://localhost:3000`** adresine giderek interaktif dokümantasyonu görüntüleyebilirsiniz.
-
----
-
-### 3. Docker & Docker Compose ile Çalıştırma
-
-#### GHCR'dan Hazır İmajı Çekme (GitHub Container Registry)
-
-```bash
-# GitHub Packages (GHCR)'dan imajı indirin
-docker pull ghcr.io/tnhnclskn/screenshot:latest
-
-# Konteyneri başlatın
-docker run -d -p 3000:3000 -e API_KEY=gizli_api_anahtariniz --name screenshot-app ghcr.io/tnhnclskn/screenshot:latest
-```
-
-#### Docker Compose ile Çalıştırma (Önerilen)
-
-```bash
-docker compose up -d
-```
-
-#### Docker CLI ile Yerel Build
-
-```bash
-docker build -t screenshot-service .
-docker run -d -p 3000:3000 -e API_KEY=gizli_api_anahtariniz --name screenshot-app screenshot-service
-```
+** `url` veya `html` parametrelerinden en az birinin belirtilmesi zorunludur.*
 
 ---
 
-## 📡 API Dokümantasyonu
+## 🔐 Kimlik Doğrulama (Authentication)
 
-### 1. Doğrudan HTML'den Ekran Görüntüsü Alma
+Eğer `.env` dosyasında `API_KEY` tanımlanmışsa, isteklerinizde aşağıdaki başlıklardan birini iletmeniz gerekir:
 
-#### A) JSON İçinde HTML Gönderme (`POST /screenshot` veya `POST /html`)
+```http
+X-API-Key: YOUR_SECRET_API_KEY
+```
+veya
+```http
+Authorization: Bearer YOUR_SECRET_API_KEY
+```
 
+> **Not:** `API_KEY` tanımlanmamışsa veya boşsa, servis genel erişime açık (Public Mode) çalışır.
+
+---
+
+## 💻 Entegrasyon Kod Örnekleri
+
+### 1. cURL Örnekleri
+
+#### A) Ekran Görüntüsü (URL)
 ```bash
 curl -X POST http://localhost:3000/screenshot \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: gizli_api_anahtariniz" \
+  -H "X-API-Key: YOUR_SECRET_API_KEY" \
+  -d '{
+    "url": "https://tunahancaliskan.com",
+    "format": "webp",
+    "fullPage": false
+  }' \
+  --output screenshot.webp
+```
+
+#### B) Ham HTML'den Ekran Görüntüsü
+```bash
+curl -X POST http://localhost:3000/screenshot \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: YOUR_SECRET_API_KEY" \
   -d '{
     "html": "<div style=\"background: #6366f1; color: white; padding: 40px; border-radius: 12px; font-family: sans-serif;\"><h1>Merhaba Dünya 🚀</h1></div>",
     "format": "png"
@@ -101,111 +109,246 @@ curl -X POST http://localhost:3000/screenshot \
   --output html_screenshot.png
 ```
 
-#### B) Ham `text/html` Gövdesi ile Gönderme (`POST /html`)
-
+#### C) Web Sayfasından Video Kaydı (MP4 & Smooth Auto-scroll)
 ```bash
-curl -X POST http://localhost:3000/html \
-  -H "Content-Type: text/html" \
-  -H "X-API-Key: gizli_api_anahtariniz" \
-  -d '<h1 style="color:red;">Doğrudan HTML</h1>' \
-  --output direct_html.png
-```
-
----
-
-### 2. URL ile Ekran Görüntüsü Alma
-
-- **URL:** `POST /screenshot` *(veya `POST /api/screenshot`)*
-- **Headers:** `Content-Type: application/json`, `X-API-Key: <API_KEY>`
-
-```bash
-curl -X POST http://localhost:3000/screenshot \
+curl -X POST http://localhost:3000/record \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: gizli_api_anahtariniz" \
+  -H "X-API-Key: YOUR_SECRET_API_KEY" \
   -d '{
     "url": "https://tunahancaliskan.com",
-    "element": "body",
-    "format": "webp",
-    "fullPage": false
+    "duration": 5,
+    "fps": 30,
+    "format": "mp4",
+    "scroll": true
   }' \
-  --output screenshot.webp
+  --output recording.mp4
+```
+
+#### D) Ham HTML'den Animasyonlu GIF Kaydı
+```bash
+curl -X POST http://localhost:3000/html/record \
+  -H "Content-Type: text/html" \
+  -H "X-API-Key: YOUR_SECRET_API_KEY" \
+  -d '<div style="background: #090d16; color: #fff; padding: 50px; font-family: sans-serif;"><h1>Animasyonlu GIF Banner 🚀</h1></div>' \
+  --output animated.gif
 ```
 
 ---
 
-### İstek Parametreleri (Request Body)
-
-| Parametre | Tip | Zorunlu | Varsayılan | Açıklama |
-|---|---|---|---|---|
-| `url` | `string` | **Opsiyonel\*** | - | Yakalanacak web sayfasının tam adresi |
-| `html` | `string` | **Opsiyonel\*** | - | Doğrudan render edilecek HTML/CSS dizesi |
-| `element` | `string` | Hayır | `null` | Spesifik bir elementi yakalamak için CSS seçicisi (`h1`, `.card`, `#pricing`) |
-| `fullPage` | `boolean` | Hayır | `false` | `true` verilirse tüm sayfa kaydırılarak yakalanır |
-| `format` | `string` | Hayır | `png` | Çıktı formatı: `png`, `jpeg` veya `webp` |
-| `quality` | `number` | Hayır | - | `jpeg` ve `webp` için kalite değeri (`1` - `100`) |
-| `width` | `number` | Hayır | `1920` | Tarayıcı genişliği (px) |
-| `height` | `number` | Hayır | `1080` | Tarayıcı yüksekliği (px) |
-| `delay` | `number` | Hayır | `0` | Çekim öncesi ek bekleme süresi (ms) |
-| `waitForSelector` | `string` | Hayır | `null` | DOM'da belirmesi beklenecek CSS seçicisi |
-
-*\* `url` veya `html` parametrelerinden en az birinin belirtilmesi gerekmektedir.*
-
----
-
-### 3. Sağlık Kontrolü (Health Check)
-
-- **URL:** `GET /up` *(veya `GET /health`)*
-- **Yanıt (200 OK):**
-```json
-{
-  "status": "OK",
-  "uptime": 240,
-  "timestamp": "2026-08-22T14:30:00.000Z",
-  "authRequired": true
-}
-```
-
----
-
-## 💻 Entegrasyon Kod Örnekleri
-
-### JavaScript (HTML Render & Fetch)
+### 2. Node.js (Fetch & Axios)
 
 ```javascript
-const response = await fetch('http://localhost:3000/screenshot', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'X-API-Key': 'gizli_api_anahtariniz'
-  },
-  body: JSON.stringify({
-    html: '<div style="background: purple; color: white; padding: 30px;"><h1>Dinamik Banner</h1></div>',
-    format: 'png'
-  })
-});
+const fs = require('fs');
 
-const blob = await response.blob();
+const API_KEY = 'YOUR_SECRET_API_KEY';
+const BASE_URL = 'http://localhost:3000';
+
+// 1. Ekran Görüntüsü Alma
+async function captureScreenshot() {
+  const response = await fetch(`${BASE_URL}/screenshot`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': API_KEY,
+    },
+    body: JSON.stringify({
+      url: 'https://tunahancaliskan.com',
+      format: 'png',
+    }),
+  });
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync('screenshot.png', buffer);
+  console.log('Ekran görüntüsü kaydedildi: screenshot.png');
+}
+
+// 2. Video Kaydı Alma (MP4)
+async function captureRecording() {
+  const response = await fetch(`${BASE_URL}/record`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key': API_KEY,
+    },
+    body: JSON.stringify({
+      url: 'https://tunahancaliskan.com',
+      duration: 5,
+      fps: 30,
+      format: 'mp4',
+      scroll: true,
+    }),
+  });
+
+  const buffer = Buffer.from(await response.arrayBuffer());
+  fs.writeFileSync('recording.mp4', buffer);
+  console.log('Video kaydı kaydedildi: recording.mp4');
+}
+
+(async () => {
+  await captureScreenshot();
+  await captureRecording();
+})();
 ```
 
-### Python (Requests)
+---
+
+### 3. Python (Requests)
 
 ```python
 import requests
 
-url = "http://localhost:3000/screenshot"
-headers = {
+BASE_URL = "http://localhost:3000"
+HEADERS = {
     "Content-Type": "application/json",
-    "X-API-Key": "gizli_api_anahtariniz"
-}
-payload = {
-    "html": "<h1>Python HTML Screenshot</h1>",
-    "format": "webp"
+    "X-API-Key": "YOUR_SECRET_API_KEY"
 }
 
-response = requests.post(url, json=payload, headers=headers)
-if response.status_code == 200:
-    with open("output.webp", "wb") as f:
-        f.write(response.content)
+# 1. Ekran Görüntüsü Alma
+ss_response = requests.post(f"{BASE_URL}/screenshot", json={
+    "url": "https://tunahancaliskan.com",
+    "format": "webp",
+    "fullPage": False
+}, headers=HEADERS)
+
+if ss_response.status_code == 200:
+    with open("screenshot.webp", "wb") as f:
+        f.write(ss_response.content)
+    print("Görsel kaydedildi: screenshot.webp")
+
+# 2. Video Kaydı Alma (MP4)
+video_response = requests.post(f"{BASE_URL}/record", json={
+    "url": "https://tunahancaliskan.com",
+    "duration": 5,
+    "fps": 30,
+    "format": "mp4",
+    "scroll": True
+}, headers=HEADERS)
+
+if video_response.status_code == 200:
+    with open("recording.mp4", "wb") as f:
+        f.write(video_response.content)
+    print("Video kaydedildi: recording.mp4")
+```
+
+---
+
+### 4. PHP (cURL)
+
+```php
+<?php
+$baseUrl = 'http://localhost:3000';
+$apiKey = 'YOUR_SECRET_API_KEY';
+
+// 1. Ekran Görüntüsü Alma
+$ch = curl_init("$baseUrl/screenshot");
+curl_setopt_array($ch, [
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => json_encode([
+        'url' => 'https://tunahancaliskan.com',
+        'format' => 'webp'
+    ]),
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        'Content-Type: application/json',
+        "X-API-Key: $apiKey"
+    ]
+]);
+$image = curl_exec($ch);
+file_put_contents('screenshot.webp', $image);
+curl_close($ch);
+echo "Ekran görüntüsü kaydedildi: screenshot.webp\n";
+
+// 2. Video Kaydı Alma (MP4 & Smooth Scroll)
+$ch = curl_init("$baseUrl/record");
+curl_setopt_array($ch, [
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => json_encode([
+        'url' => 'https://tunahancaliskan.com',
+        'duration' => 5,
+        'fps' => 30,
+        'format' => 'mp4',
+        'scroll' => true
+    ]),
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        'Content-Type: application/json',
+        "X-API-Key: $apiKey"
+    ]
+]);
+$video = curl_exec($ch);
+file_put_contents('recording.mp4', $video);
+curl_close($ch);
+echo "Video kaydı kaydedildi: recording.mp4\n";
+?>
+```
+
+---
+
+## ⚙️ Ortam Değişkenleri (Environment Variables)
+
+Projenin kök dizinindeki `.env` dosyasından aşağıdaki ayarları yapılandırabilirsiniz:
+
+| Değişken | Tip | Varsayılan | Açıklama |
+|---|---|---|---|
+| `PORT` | `number` | `3000` | HTTP sunucusunun dinleyeceği port numarası |
+| `API_KEY` | `string` | `null` | API erişim anahtarı. Boş ise servis genel erişime açıktır |
+| `NODE_ENV` | `string` | `development` | Çalışma ortamı (`development` / `production`) |
+| `DEFAULT_TIMEOUT` | `number` | `30000` | Sayfa yükleme ve işlemler için maksimum zaman aşımı (ms) |
+| `PUPPETEER_HEADLESS` | `boolean` | `true` | Puppeteer tarayıcısının headless modda çalışması |
+| `FFMPEG_PATH` | `string` | `ffmpeg-static` | Video işleme için kullanılacak FFmpeg ikili yolu |
+| `MAX_RECORDING_DURATION` | `number` | `60` | İzin verilen maksimum kayıt süresi (saniye) |
+| `DEFAULT_RECORDING_DURATION` | `number` | `5` | Varsayılan video kayıt süresi (saniye) |
+| `DEFAULT_RECORDING_FPS` | `number` | `30` | Varsayılan video kare hızı (FPS) |
+
+---
+
+## 🐳 Docker & Docker Compose ile Çalıştırma
+
+### 1. GHCR'dan Hazır İmajı Çekme (GitHub Container Registry)
+
+```bash
+# En güncel hazır imajı çekin
+docker pull ghcr.io/tnhnclskn/screenshot:latest
+
+# Konteyneri başlatın
+docker run -d -p 3000:3000 -e API_KEY=gizli_api_anahtariniz --name screenshot-app ghcr.io/tnhnclskn/screenshot:latest
+```
+
+### 2. Docker Compose ile Çalıştırma (Önerilen)
+
+```bash
+# Arka planda servisleri başlatın
+docker compose up -d
+
+# Logları takip etmek için
+docker compose logs -f
+```
+
+### 3. Docker CLI ile Yerel Build
+
+```bash
+# Docker imajını oluşturun
+docker build -t screenshot-service .
+
+# Konteyneri çalıştırın
+docker run -d -p 3000:3000 -e API_KEY=gizli_api_anahtariniz --name screenshot-app screenshot-service
+```
+
+---
+
+## 🧪 Yerel Geliştirme & Testler
+
+```bash
+# Bağımlılıkları yükleyin
+npm install
+
+# Testleri çalıştırın
+npm test
+# veya
+node --test
+
+# Geliştirme sunucusunu başlatın (Watch modu)
+npm run dev
 ```
 
 ---

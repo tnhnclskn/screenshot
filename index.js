@@ -36,27 +36,33 @@ app.use((req, res) => {
 // Global Error Handler
 app.use(errorHandler);
 
-// Sunucuyu Başlat
-const server = app.listen(config.port, () => {
-  console.log(`\n🚀 Screenshot Servisi Hazır!`);
-  console.log(`📡 Port: ${config.port}`);
-  console.log(`🌐 Dokümantasyon: http://localhost:${config.port}`);
-  console.log(`📸 Screenshot Endpoint: POST http://localhost:${config.port}/screenshot`);
-  console.log(`📄 HTML Screenshot Endpoint: POST http://localhost:${config.port}/html`);
-  console.log(`🔐 Kimlik Doğrulama: ${config.apiKey ? 'Aktif (Header Kontrolü)' : 'Devre Dışı (Public Mode)'}\n`);
-});
-
-// Graceful Shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM sinyali alındı, sunucu kapatılıyor...');
-  server.close(() => {
-    process.exit(0);
+let server;
+if (require.main === module) {
+  // Sunucuyu Başlat
+  server = app.listen(config.port, () => {
+    console.log(`\n🚀 Screenshot & Video Recording Servisi Hazır!`);
+    console.log(`📡 Port: ${config.port}`);
+    console.log(`🌐 Dokümantasyon: http://localhost:${config.port}`);
+    console.log(`📸 Screenshot Endpoint: POST http://localhost:${config.port}/screenshot`);
+    console.log(`📄 HTML Screenshot Endpoint: POST http://localhost:${config.port}/html`);
+    console.log(`🎥 Video Record Endpoint: POST http://localhost:${config.port}/record`);
+    console.log(`🔐 Kimlik Doğrulama: ${config.apiKey ? 'Aktif (Header Kontrolü)' : 'Devre Dışı (Public Mode)'}\n`);
   });
-});
 
-process.on('SIGINT', () => {
-  console.log('SIGINT sinyali alındı, sunucu kapatılıyor...');
-  server.close(() => {
-    process.exit(0);
+  // Graceful Shutdown
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM sinyali alındı, sunucu kapatılıyor...');
+    server.close(() => {
+      process.exit(0);
+    });
   });
-});
+
+  process.on('SIGINT', () => {
+    console.log('SIGINT sinyali alındı, sunucu kapatılıyor...');
+    server.close(() => {
+      process.exit(0);
+    });
+  });
+}
+
+module.exports = app;

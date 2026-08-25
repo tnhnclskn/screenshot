@@ -3,6 +3,7 @@ const router = express.Router();
 const config = require('../config');
 const authMiddleware = require('../middleware/auth');
 const { handleScreenshot } = require('../controllers/screenshot');
+const { handleRecord } = require('../controllers/record');
 const { renderDocsPage } = require('../views/docs');
 
 // 1. Dokümantasyon Ana Sayfası
@@ -31,5 +32,12 @@ router.post('/api/screenshot', authMiddleware, handleScreenshot);
 // 4. Doğrudan HTML'den Ekran Görüntüsü Alma
 router.post('/html', authMiddleware, handleScreenshot);
 router.post('/screenshot/html', authMiddleware, handleScreenshot);
+
+// 5. Video / Screencast Kaydı Alma
+router.post('/record', authMiddleware, handleRecord);
+router.post('/video', authMiddleware, handleRecord);
+router.post('/api/record', authMiddleware, handleRecord);
+router.post('/html/record', authMiddleware, handleRecord);
+router.post('/record/html', authMiddleware, handleRecord);
 
 module.exports = router;

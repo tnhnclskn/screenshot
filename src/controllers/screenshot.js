@@ -78,7 +78,7 @@ async function handleScreenshot(req, res, next) {
       'Cache-Control': 'public, max-age=60',
     });
 
-    return res.send(result.buffer);
+    return res.end(result.buffer);
   } catch (error) {
     next(error);
   }
