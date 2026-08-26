@@ -981,6 +981,10 @@ function renderDocsPage(config) {
 '    </footer>' +
 '  </div>' +
 '  <script>' +
+'    document.addEventListener("DOMContentLoaded", () => {' +
+'      const savedApiKey = localStorage.getItem("screenshot_api_key");' +
+'      if (savedApiKey) document.getElementById("pApiKey").value = savedApiKey;' +
+'    });' +
 '    let currentActionMode = \'screenshot\';' +
 '    let currentInputMode = \'url\';' +
 '    function switchActionMode(mode) {' +
@@ -1113,6 +1117,9 @@ function renderDocsPage(config) {
 '      const apiKey = document.getElementById(\'pApiKey\').value;' +
 '      if (apiKey) {' +
 '        headers[\'X-API-Key\'] = apiKey;' +
+'        localStorage.setItem("screenshot_api_key", apiKey);' +
+'      } else {' +
+'        localStorage.removeItem("screenshot_api_key");' +
 '      }' +
 '      try {' +
 '        const res = await fetch(endpoint, {' +
