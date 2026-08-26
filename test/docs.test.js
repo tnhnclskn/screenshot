@@ -76,6 +76,24 @@ describe('Documentation & Playground View Tests', () => {
     assert.ok(html.includes('previewVideo'), 'Must include video preview element');
   });
 
+  test('renderDocsPage includes advanced collapsible parameters', () => {
+    const config = { port: 3000, apiKey: null };
+    const html = renderDocsPage(config);
+
+    assert.ok(html.includes('advanced-details'));
+    assert.ok(html.includes('pWidth'));
+    assert.ok(html.includes('pHeight'));
+    assert.ok(html.includes('pDeviceScaleFactor'));
+    assert.ok(html.includes('pDelay'));
+    assert.ok(html.includes('pWaitForSelector'));
+    assert.ok(html.includes('pQuality'));
+    assert.ok(html.includes('pUserAgent'));
+    assert.ok(html.includes('pHideSelectors'));
+    assert.ok(html.includes('pRemoveSelectors'));
+    assert.ok(html.includes('pHeaders'));
+    assert.ok(html.includes('pCookies'));
+  });
+
   test('renderDocsPage respects apiKey configuration for auth badge', () => {
     const publicHtml = renderDocsPage({ port: 3000, apiKey: null });
     assert.ok(publicHtml.includes('Public Mode'));

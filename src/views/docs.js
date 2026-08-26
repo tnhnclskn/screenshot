@@ -481,6 +481,37 @@ function renderDocsPage(config) {
 '    @keyframes spin {' +
 '      to { transform: rotate(360deg); }' +
 '    }' +
+'    details.advanced-details {' +
+'      background: rgba(15, 23, 42, 0.6);' +
+'      border: 1px solid var(--border);' +
+'      border-radius: 10px;' +
+'      padding: 0.75rem 1rem;' +
+'      margin-bottom: 1.25rem;' +
+'      transition: all 0.2s ease;' +
+'    }' +
+'    details.advanced-details[open] {' +
+'      border-color: rgba(99, 102, 241, 0.4);' +
+'      background: rgba(15, 23, 42, 0.85);' +
+'    }' +
+'    summary.advanced-summary {' +
+'      font-size: 0.85rem;' +
+'      font-weight: 600;' +
+'      color: #818cf8;' +
+'      cursor: pointer;' +
+'      user-select: none;' +
+'      display: flex;' +
+'      align-items: center;' +
+'      gap: 0.5rem;' +
+'      outline: none;' +
+'    }' +
+'    summary.advanced-summary:hover {' +
+'      color: #c7d2fe;' +
+'    }' +
+'    .advanced-content {' +
+'      margin-top: 1rem;' +
+'      padding-top: 1rem;' +
+'      border-top: 1px solid rgba(255, 255, 255, 0.06);' +
+'    }' +
 '  </style>' +
 '</head>' +
 '<body>' +
@@ -592,6 +623,61 @@ function renderDocsPage(config) {
 '              </select>' +
 '            </div>' +
 '          </div>' +
+'          <details class="advanced-details">' +
+'            <summary class="advanced-summary">⚙️ Gelişmiş Parametreler (Advanced Options)</summary>' +
+'            <div class="advanced-content">' +
+'              <div class="form-row">' +
+'                <div class="form-group">' +
+'                  <label for="pWidth">Genişlik (px)</label>' +
+'                  <input type="number" id="pWidth" placeholder="1920">' +
+'                </div>' +
+'                <div class="form-group">' +
+'                  <label for="pHeight">Yükseklik (px)</label>' +
+'                  <input type="number" id="pHeight" placeholder="1080">' +
+'                </div>' +
+'              </div>' +
+'              <div class="form-row">' +
+'                <div class="form-group">' +
+'                  <label for="pDeviceScaleFactor">Retina (DPR)</label>' +
+'                  <input type="number" id="pDeviceScaleFactor" step="0.1" placeholder="1">' +
+'                </div>' +
+'                <div class="form-group">' +
+'                  <label for="pQuality">Kalite (1-100)</label>' +
+'                  <input type="number" id="pQuality" placeholder="Varsayılan">' +
+'                </div>' +
+'              </div>' +
+'              <div class="form-row">' +
+'                <div class="form-group">' +
+'                  <label for="pDelay">Bekleme (Delay ms)</label>' +
+'                  <input type="number" id="pDelay" placeholder="0">' +
+'                </div>' +
+'                <div class="form-group">' +
+'                  <label for="pWaitForSelector">Selector Bekle</label>' +
+'                  <input type="text" id="pWaitForSelector" placeholder="örn: .loaded">' +
+'                </div>' +
+'              </div>' +
+'              <div class="form-group">' +
+'                <label for="pHideSelectors">Gizlenecek Seçiciler (hideSelectors)</label>' +
+'                <input type="text" id="pHideSelectors" placeholder="örn: .cookie-banner, #ads">' +
+'              </div>' +
+'              <div class="form-group">' +
+'                <label for="pRemoveSelectors">Silinecek Seçiciler (removeSelectors)</label>' +
+'                <input type="text" id="pRemoveSelectors" placeholder="örn: header, footer">' +
+'              </div>' +
+'              <div class="form-group">' +
+'                <label for="pUserAgent">Özel User-Agent</label>' +
+'                <input type="text" id="pUserAgent" placeholder="Mozilla/5.0...">' +
+'              </div>' +
+'              <div class="form-group">' +
+'                <label for="pHeaders">Özel Headers (JSON)</label>' +
+'                <input type="text" id="pHeaders" placeholder=\'{"Authorization": "Bearer token"}\'>' +
+'              </div>' +
+'              <div class="form-group">' +
+'                <label for="pCookies">Özel Cookies (JSON Array)</label>' +
+'                <input type="text" id="pCookies" placeholder=\'[{"name":"session","value":"123","domain":"example.com"}]\'>' +
+'              </div>' +
+'            </div>' +
+'          </details>' +
 '          <div class="form-group">' +
 '            <label for="pApiKey">API Key Header ' + (isAuthEnabled ? '<span style="color:#f87171;">(Sunucuda Auth Aktif - Zorunlu)</span>' : '<span style="color:#94a3b8;">(İsteğe bağlı)</span>') + '</label>' +
 '            <input type="password" id="pApiKey" placeholder="X-API-Key veya Bearer Token">' +
@@ -1001,6 +1087,28 @@ function renderDocsPage(config) {
 '      } else {' +
 '        payload.html = document.getElementById(\'pHtml\').value;' +
 '      }' +
+'      const pWidth = document.getElementById(\'pWidth\').value;' +
+'      if (pWidth) payload.width = parseInt(pWidth, 10);' +
+'      const pHeight = document.getElementById(\'pHeight\').value;' +
+'      if (pHeight) payload.height = parseInt(pHeight, 10);' +
+'      const pDsf = document.getElementById(\'pDeviceScaleFactor\').value;' +
+'      if (pDsf) payload.deviceScaleFactor = parseFloat(pDsf);' +
+'      const pQ = document.getElementById(\'pQuality\').value;' +
+'      if (pQ) payload.quality = parseInt(pQ, 10);' +
+'      const pDel = document.getElementById(\'pDelay\').value;' +
+'      if (pDel) payload.delay = parseInt(pDel, 10);' +
+'      const pWfs = document.getElementById(\'pWaitForSelector\').value;' +
+'      if (pWfs) payload.waitForSelector = pWfs;' +
+'      const pHs = document.getElementById(\'pHideSelectors\').value;' +
+'      if (pHs) payload.hideSelectors = pHs.split(\',\').map(s => s.trim()).filter(Boolean);' +
+'      const pRs = document.getElementById(\'pRemoveSelectors\').value;' +
+'      if (pRs) payload.removeSelectors = pRs.split(\',\').map(s => s.trim()).filter(Boolean);' +
+'      const pUa = document.getElementById(\'pUserAgent\').value;' +
+'      if (pUa) payload.userAgent = pUa;' +
+'      const pHead = document.getElementById(\'pHeaders\').value;' +
+'      if (pHead) { try { payload.headers = JSON.parse(pHead); } catch(e){} }' +
+'      const pCook = document.getElementById(\'pCookies\').value;' +
+'      if (pCook) { try { payload.cookies = JSON.parse(pCook); } catch(e){} }' +
 '      const headers = { \'Content-Type\': \'application/json\' };' +
 '      const apiKey = document.getElementById(\'pApiKey\').value;' +
 '      if (apiKey) {' +
