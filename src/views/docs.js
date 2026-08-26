@@ -559,10 +559,6 @@ function renderDocsPage(config) {
 '            <textarea id="pHtml"><div style="background: linear-gradient(135deg, #4f46e5, #06b6d4); color: white; padding: 60px; border-radius: 20px; font-family: system-ui, sans-serif; text-align: center;"><h1>Merhaba Dünya! 🚀</h1><p>Doğrudan render edilen HTML içeriği.</p></div></textarea>' +
 '          </div>' +
 '          <div id="screenshotOptionsGroup">' +
-'            <div class="form-group">' +
-'              <label for="pElement">Element CSS Seçicisi (Opsiyonel)</label>' +
-'              <input type="text" id="pElement" placeholder="h1, .card, #main (Tüm sayfa için boş bırakın)">' +
-'            </div>' +
 '            <div class="form-row">' +
 '              <div class="form-group">' +
 '                <label for="pImageFormat">Görsel Formatı</label>' +
@@ -626,6 +622,16 @@ function renderDocsPage(config) {
 '          <details class="advanced-details">' +
 '            <summary class="advanced-summary">⚙️ Gelişmiş Parametreler (Advanced Options)</summary>' +
 '            <div class="advanced-content">' +
+'              <div class="form-row">' +
+'                <div class="form-group">' +
+'                  <label for="pElement">Element CSS Seçicisi (Opsiyonel)</label>' +
+'                  <input type="text" id="pElement" placeholder="örn: h1, .card, #main">' +
+'                </div>' +
+'                <div class="form-group">' +
+'                  <label for="pClickSelector">Tıklanacak Seçici (clickSelector)</label>' +
+'                  <input type="text" id="pClickSelector" placeholder="örn: .cookie-btn, button">' +
+'                </div>' +
+'              </div>' +
 '              <div class="form-row">' +
 '                <div class="form-group">' +
 '                  <label for="pWidth">Genişlik (px)</label>' +
@@ -871,6 +877,13 @@ function renderDocsPage(config) {
 '              <td>DOM\'da belirmesi beklenecek CSS element seçicisi.</td>' +
 '            </tr>' +
 '            <tr>' +
+'              <td><code>clickSelector</code></td>' +
+'              <td>string</td>' +
+'              <td>Hayır</td>' +
+'              <td>-</td>' +
+'              <td>Kayıt başlamadan önce tıklanacak CSS element seçicisi.</td>' +
+'            </tr>' +
+'            <tr>' +
 '              <td><code>darkMode</code></td>' +
 '              <td>boolean</td>' +
 '              <td>Hayır</td>' +
@@ -1067,8 +1080,7 @@ function renderDocsPage(config) {
 '        btnText.innerHTML = \'<span class="spinner"></span> Ekran Görüntüsü Alınıyor...\';' +
 '        payload = {' +
 '          format: expectedFormat,' +
-'          fullPage: document.getElementById(\'pFullPage\').value === \'true\',' +
-'          element: document.getElementById(\'pElement\').value || undefined' +
+'          fullPage: document.getElementById(\'pFullPage\').value === \'true\'' +
 '        };' +
 '      } else {' +
 '        endpoint = \'/record\';' +
@@ -1091,6 +1103,10 @@ function renderDocsPage(config) {
 '      } else {' +
 '        payload.html = document.getElementById(\'pHtml\').value;' +
 '      }' +
+'      const pEl = document.getElementById(\'pElement\').value;' +
+'      if (pEl) payload.element = pEl;' +
+'      const pCs = document.getElementById(\'pClickSelector\').value;' +
+'      if (pCs) payload.clickSelector = pCs;' +
 '      const pWidth = document.getElementById(\'pWidth\').value;' +
 '      if (pWidth) payload.width = parseInt(pWidth, 10);' +
 '      const pHeight = document.getElementById(\'pHeight\').value;' +

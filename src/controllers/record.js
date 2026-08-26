@@ -17,6 +17,8 @@ async function handleRecord(req, res, next) {
     let scroll;
     let delay;
     let waitForSelector;
+    let clickSelector;
+    let element;
     let quality;
     let crf;
     let darkMode;
@@ -40,6 +42,8 @@ async function handleRecord(req, res, next) {
         scroll,
         delay,
         waitForSelector,
+        clickSelector,
+        element,
         quality,
         crf,
         darkMode,
@@ -64,6 +68,8 @@ async function handleRecord(req, res, next) {
         scroll,
         delay,
         waitForSelector,
+        clickSelector,
+        element,
         quality,
         crf,
         darkMode,
@@ -87,6 +93,8 @@ async function handleRecord(req, res, next) {
         scroll,
         delay,
         waitForSelector,
+        clickSelector,
+        element,
         quality,
         crf,
         darkMode,
@@ -159,6 +167,8 @@ async function handleRecord(req, res, next) {
       scroll: scroll === true || scroll === 'true' || scroll === '1',
       delay,
       waitForSelector,
+      clickSelector: clickSelector && typeof clickSelector === 'string' ? clickSelector.trim() : null,
+      element: element && typeof element === 'string' ? element.trim() : null,
       quality,
       crf,
       darkMode: darkMode === true || darkMode === 'true' || darkMode === '1',

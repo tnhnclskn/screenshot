@@ -137,6 +137,30 @@ describe('Record API Tests', () => {
     assert.ok(bufHtmlRecord.byteLength > 0);
   });
 
+  test('POST /record with clickSelector and element', async () => {
+    const res = await fetch(`${baseUrl}/record`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        html: `
+          <div style="padding: 50px;">
+            <button id="btn" onclick="document.getElementById('target').innerText='Clicked!'">Click Me</button>
+            <div id="target" style="width: 200px; height: 100px; background: cyan; margin-top: 20px;">Waiting...</div>
+          </div>
+        `,
+        duration: 1,
+        format: 'mp4',
+        clickSelector: '#btn',
+        element: '#target'
+      }),
+    });
+
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.headers.get('content-type'), 'video/mp4');
+    const arrayBuffer = await res.arrayBuffer();
+    assert.ok(arrayBuffer.byteLength > 0);
+  });
+
   test('POST /record/html with raw text/html returns 200 OK and video/mp4', async () => {
     const res = await fetch(`${baseUrl}/record/html?duration=1&format=mp4`, {
       method: 'POST',

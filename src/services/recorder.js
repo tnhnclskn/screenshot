@@ -189,12 +189,64 @@ async function recordPage(options = {}) {
       }, hideSelectors, removeSelectors);
     }
 
+    // Tıklanacak element (clickSelector)
+    if (options.clickSelector && typeof options.clickSelector === 'string' && options.clickSelector.trim() !== '') {
+      const clickTarget = options.clickSelector.trim();
+      await page.waitForSelector(clickTarget, { timeout: 10000 });
+      await page.click(clickTarget);
+    }
+
+    // Element (Crop) Desteği
+    let crop = undefined;
+    if (options.element && typeof options.element === 'string' && options.element.trim() !== '') {
+      const elSelector = options.element.trim();
+      await page.waitForSelector(elSelector, { timeout: 10000 });
+      const elementHandle = await page.$(elSelector);
+      if (!elementHandle) {
+        const error = new Error(`Belirtilen element bulunamadı: "${elSelector}"`);
+        error.statusCode = 400;
+        throw error;
+      }
+
+      await page.evaluate((el) => {
+        if (el && typeof el.scrollIntoView === 'function') {
+          el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        }
+      }, elementHandle).catch(() => {});
+
+      const boundingBox = await elementHandle.boundingBox();
+      if (!boundingBox || boundingBox.width <= 0 || boundingBox.height <= 0) {
+        const error = new Error(`Belirtilen element görünür bir alana sahip değil: "${elSelector}"`);
+        error.statusCode = 400;
+        throw error;
+      }
+
+      const cropX = Math.max(0, Math.floor(boundingBox.x));
+      const cropY = Math.max(0, Math.floor(boundingBox.y));
+      const cropWidth = Math.min(Math.floor(boundingBox.width), targetWidth - cropX);
+      const cropHeight = Math.min(Math.floor(boundingBox.height), targetHeight - cropY);
+
+      if (cropWidth <= 0 || cropHeight <= 0) {
+        const error = new Error(`Belirtilen element viewport sınırları içinde değil: "${elSelector}"`);
+        error.statusCode = 400;
+        throw error;
+      }
+
+      crop = {
+        x: cropX,
+        y: cropY,
+        width: cropWidth,
+        height: cropHeight,
+      };
+    }
+
     // Screencast seçenekleri
     const screencastOptions = {
       path: tempFilePath,
       fps: targetFps,
       ffmpegPath: config.ffmpegPath,
     };
+    if (crop) screencastOptions.crop = crop;
 
     if (quality !== undefined) {
       const q = parseInt(quality, 10);

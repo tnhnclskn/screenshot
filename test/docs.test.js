@@ -43,6 +43,7 @@ describe('Documentation & Playground View Tests', () => {
       'height',
       'delay',
       'waitForSelector',
+      'clickSelector',
     ];
 
     for (const param of requiredParams) {
@@ -86,6 +87,7 @@ describe('Documentation & Playground View Tests', () => {
     assert.ok(html.includes('pDeviceScaleFactor'));
     assert.ok(html.includes('pDelay'));
     assert.ok(html.includes('pWaitForSelector'));
+    assert.ok(html.includes('pClickSelector'));
     assert.ok(html.includes('pQuality'));
     assert.ok(html.includes('pUserAgent'));
     assert.ok(html.includes('pHideSelectors'));
